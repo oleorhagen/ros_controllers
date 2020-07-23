@@ -384,8 +384,8 @@ namespace ackermann_steering_controller{
     const double steer_pos = 0.0;
     const double wheel_vel = 0.0;
 
-    rear_wheel_joint_.setCommand(steer_pos);
-    front_steer_joint_.setCommand(wheel_vel);
+    rear_wheel_joint_.setCommand(wheel_vel);
+    front_steer_joint_.setCommand(steer_pos);
   }
 
   void AckermannSteeringController::cmdVelCallback(const geometry_msgs::Twist& command)

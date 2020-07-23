@@ -169,6 +169,25 @@ namespace ackermann_steering_controller{
     ROS_INFO_STREAM_NAMED(name_,
                           "front_steer: " << front_steer_name << ".");
 
+
+    std::string left_front_steer_name = "left_front_steer_joint";
+    if (!controller_nh.param("left_front_steer", left_front_steer_name, left_front_steer_name)) {
+      ROS_ERROR_STREAM_NAMED(
+          name_, "left_front_steer_joint is not set in the configuration");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "left_front_steer: " << left_front_steer_name << ".");
+
+    std::string right_front_steer_name = "right_front_steer_joint";
+    if (!controller_nh.param("right_front_steer", right_front_steer_name, right_front_steer_name)) {
+      ROS_ERROR_STREAM_NAMED(
+          name_, "right_front_steer_joint is not set in the configuration");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "right_front_steer: " << right_front_steer_name << ".");
+
     // Odometry related:
     double publish_rate;
     controller_nh.param("publish_rate", publish_rate, 50.0);
@@ -277,6 +296,18 @@ namespace ackermann_steering_controller{
     front_steer_joint_ = pos_joint_if->getHandle(front_steer_name); // throws on failure
     ROS_INFO_STREAM_NAMED(name_,
                           "Adding the subscriber: cmd_vel");
+
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the left front steer with joint name: " << left_front_steer_name);
+    left_front_steer_joint_ = pos_joint_if->getHandle(left_front_steer_name); // throws on failure
+
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the right front steer with joint name: " << right_front_steer_name);
+    right_front_steer_joint_ = pos_joint_if->getHandle(right_front_steer_name); // throws on failure
+
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the subscriber: cmd_vel");
+
     sub_command_ = controller_nh.subscribe("cmd_vel", 1, &AckermannSteeringController::cmdVelCallback, this);
     ROS_INFO_STREAM_NAMED(name_, "Finished controller initialization");
 
@@ -362,7 +393,10 @@ namespace ackermann_steering_controller{
     const double wheel_vel = curr_cmd.lin/wheel_radius_; // omega = linear_vel / radius
     rear_wheel_joint_.setCommand(wheel_vel);
     left_rear_wheel_joint_.setCommand(wheel_vel);
+
     front_steer_joint_.setCommand(curr_cmd.ang);
+    left_front_steer_joint_.setCommand(curr_cmd.ang);
+    right_front_steer_joint_.setCommand(curr_cmd.ang);
 
   }
 
@@ -389,6 +423,8 @@ namespace ackermann_steering_controller{
     rear_wheel_joint_.setCommand(wheel_vel);
     left_rear_wheel_joint_.setCommand(wheel_vel);
     front_steer_joint_.setCommand(steer_pos);
+    left_front_steer_joint_.setCommand(steer_pos);
+    right_front_steer_joint_.setCommand(steer_pos);
   }
 
   void AckermannSteeringController::cmdVelCallback(const geometry_msgs::Twist& command)

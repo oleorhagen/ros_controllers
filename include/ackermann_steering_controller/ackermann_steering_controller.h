@@ -111,6 +111,8 @@ namespace ackermann_steering_controller{
     hardware_interface::JointHandle rear_wheel_joint_;
     hardware_interface::JointHandle left_rear_wheel_joint_;
     hardware_interface::JointHandle front_steer_joint_;
+    hardware_interface::JointHandle left_front_steer_joint_;
+    hardware_interface::JointHandle right_front_steer_joint_;
 
     /// Velocity command related:
     struct Commands

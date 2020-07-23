@@ -435,7 +435,7 @@ namespace ackermann_steering_controller{
       if (!allow_multiple_cmd_vel_publishers_ && sub_command_.getNumPublishers() > 1)
       {
         ROS_ERROR_STREAM_THROTTLE_NAMED(1.0, name_, "Detected " << sub_command_.getNumPublishers()
-            << " publishers. Only 1 publisher is allowed. Going to brake.");
+            << " publishers. Only 1 publisher is allowed. Braking...");
         brake();
         return;
       }

@@ -142,24 +142,32 @@ namespace ackermann_steering_controller{
 
     //-- single rear wheel joint
     std::string rear_wheel_name = "rear_wheel_joint";
-    controller_nh.param("rear_wheel", rear_wheel_name, rear_wheel_name);
+    if (!controller_nh.param("rear_wheel", rear_wheel_name, rear_wheel_name)) {
+      ROS_ERROR_STREAM_NAMED(
+                             name_, "rear_wheel: " << rear_wheel_name << ".");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "rear_wheel: " << rear_wheel_name << ".");
 
-    // std::string left_rear_wheel_name = "left_rear_wheel_joint";
-    // if (!controller_nh.param("left_rear_wheel", left_rear_wheel_name, left_rear_wheel_name)) {
-    //   ROS_ERROR_STREAM_THROTTLE_NAMED(
-    //       1.0, name_,
-    //       "left_rear_wheel_joint is not set in the configuration");
-    //   brake();
-    //   return;
-    // }
-    // ROS_INFO_STREAM_NAMED(name_,
-    //                       "Wheel left back name: "
-    //                           << left_rear_wheel_name << ".");
+    std::string left_rear_wheel_name = "left_rear_wheel_joint";
+    if (!controller_nh.param("left_rear_wheel", left_rear_wheel_name, left_rear_wheel_name)) {
+      ROS_ERROR_STREAM_NAMED(name_, "left_rear_wheel_joint is not set in the configuration");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "left_rear_wheel: "
+                              << left_rear_wheel_name << ".");
 
     //-- single front steer joint
     std::string front_steer_name = "front_steer_joint";
-    controller_nh.param("front_steer", front_steer_name, front_steer_name);
-
+    if (!controller_nh.param("front_steer", front_steer_name, front_steer_name)) {
+      ROS_ERROR_STREAM_NAMED(
+          name_, "front_steer_joint is not set in the configuration");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "front_steer: " << front_steer_name << ".");
 
     // Odometry related:
     double publish_rate;

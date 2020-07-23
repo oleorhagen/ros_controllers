@@ -266,10 +266,11 @@ namespace ackermann_steering_controller{
                           "Adding the rear wheel with joint name: " << rear_wheel_name);
     rear_wheel_joint_ = vel_joint_if->getHandle(rear_wheel_name); // throws on failure
 
-    // ROS_INFO_STREAM_NAMED(
-    //     name_, "Adding the left rear wheel with joint name: " << rear_wheel_name);
-    // left_rear_wheel_joint_ =
-    //     vel_joint_if->getHandle(rear_wheel_name); // throws on failure
+
+    ROS_INFO_STREAM_NAMED(name_,
+                          "Adding the left rear wheel with joint name: " << left_rear_wheel_name);
+    left_rear_wheel_joint_ = vel_joint_if->getHandle(left_rear_wheel_name); // throws on failure
+
     //-- front steer
     ROS_INFO_STREAM_NAMED(name_,
                           "Adding the front steer with joint name: " << front_steer_name);
@@ -360,6 +361,7 @@ namespace ackermann_steering_controller{
     // Set Command
     const double wheel_vel = curr_cmd.lin/wheel_radius_; // omega = linear_vel / radius
     rear_wheel_joint_.setCommand(wheel_vel);
+    left_rear_wheel_joint_.setCommand(wheel_vel);
     front_steer_joint_.setCommand(curr_cmd.ang);
 
   }
@@ -385,6 +387,7 @@ namespace ackermann_steering_controller{
     const double wheel_vel = 0.0;
 
     rear_wheel_joint_.setCommand(wheel_vel);
+    left_rear_wheel_joint_.setCommand(wheel_vel);
     front_steer_joint_.setCommand(steer_pos);
   }
 

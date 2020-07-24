@@ -108,8 +108,11 @@ namespace ackermann_steering_controller{
     bool open_loop_;
 
     /// Hardware handles:
-    hardware_interface::JointHandle rear_wheel_joint_;
     hardware_interface::JointHandle left_rear_wheel_joint_;
+    hardware_interface::JointHandle right_rear_wheel_joint_;
+    hardware_interface::JointHandle left_front_wheel_joint_;
+    hardware_interface::JointHandle right_front_wheel_joint_;
+
     hardware_interface::JointHandle front_steer_joint_;
     hardware_interface::JointHandle left_front_steer_joint_;
     hardware_interface::JointHandle right_front_steer_joint_;

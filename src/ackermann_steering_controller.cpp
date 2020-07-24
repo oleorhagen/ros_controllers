@@ -141,14 +141,14 @@ namespace ackermann_steering_controller{
     name_ = complete_ns.substr(id + 1);
 
     //-- single rear wheel joint
-    std::string rear_wheel_name = "rear_wheel_joint";
-    if (!controller_nh.param("rear_wheel", rear_wheel_name, rear_wheel_name)) {
+    std::string right_rear_wheel_name = "right_rear_wheel_joint";
+    if (!controller_nh.param("right_rear_wheel", right_rear_wheel_name, right_rear_wheel_name)) {
       ROS_ERROR_STREAM_NAMED(
-                             name_, "rear_wheel: " << rear_wheel_name << ".");
+                             name_, "right_rear_wheel: " << right_rear_wheel_name << ".");
       return false;
     }
     ROS_INFO_STREAM_NAMED(name_,
-                          "rear_wheel: " << rear_wheel_name << ".");
+                          "right_rear_wheel: " << right_rear_wheel_name << ".");
 
     std::string left_rear_wheel_name = "left_rear_wheel_joint";
     if (!controller_nh.param("left_rear_wheel", left_rear_wheel_name, left_rear_wheel_name)) {
@@ -158,6 +158,25 @@ namespace ackermann_steering_controller{
     ROS_INFO_STREAM_NAMED(name_,
                           "left_rear_wheel: "
                               << left_rear_wheel_name << ".");
+
+    std::string right_front_wheel_name = "right_front_wheel_joint";
+    if (!controller_nh.param("right_front_wheel", right_front_wheel_name,
+                             right_front_wheel_name)) {
+      ROS_ERROR_STREAM_NAMED(
+          name_, "right_front_wheel: " << right_front_wheel_name << ".");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_, "front_wheel: " << right_front_wheel_name << ".");
+
+    std::string left_front_wheel_name = "left_front_wheel_joint";
+    if (!controller_nh.param("left_front_wheel", left_front_wheel_name,
+                             left_front_wheel_name)) {
+      ROS_ERROR_STREAM_NAMED(
+          name_, "left_front_wheel_joint is not set in the configuration");
+      return false;
+    }
+    ROS_INFO_STREAM_NAMED(name_,
+                          "left_front_wheel: " << left_front_wheel_name << ".");
 
     //-- single front steer joint
     std::string front_steer_name = "front_steer_joint";
@@ -259,14 +278,17 @@ namespace ackermann_steering_controller{
     bool lookup_wheel_separation_h = !controller_nh.getParam("wheel_separation_h", wheel_separation_h_);
     bool lookup_wheel_radius = !controller_nh.getParam("wheel_radius", wheel_radius_);
 
-    if (!setOdomParamsFromUrdf(root_nh,
-                               rear_wheel_name,
-                               front_steer_name,
-                               lookup_wheel_separation_h,
-                               lookup_wheel_radius))
-    {
+    if (lookup_wheel_separation_h || lookup_wheel_radius) {
       return false;
     }
+    // if (!setOdomParamsFromUrdf(root_nh,
+    //                            right_rear_wheel_name,
+    //                            front_steer_name,
+    //                            lookup_wheel_separation_h,
+    //                            lookup_wheel_radius))
+    // {
+    //   return false;
+    // }
 
     // Regardless of how we got the separation and radius, use them
     // to set the odometry parameters
@@ -282,13 +304,22 @@ namespace ackermann_steering_controller{
     //-- rear wheel
     //---- handles need to be previously registerd in ackermann_steering_test.cpp
     ROS_INFO_STREAM_NAMED(name_,
-                          "Adding the rear wheel with joint name: " << rear_wheel_name);
-    rear_wheel_joint_ = vel_joint_if->getHandle(rear_wheel_name); // throws on failure
-
+                          "Adding the right rear wheel with joint name: " << right_rear_wheel_name);
+    right_rear_wheel_joint_ = vel_joint_if->getHandle(right_rear_wheel_name); // throws on failure
 
     ROS_INFO_STREAM_NAMED(name_,
                           "Adding the left rear wheel with joint name: " << left_rear_wheel_name);
     left_rear_wheel_joint_ = vel_joint_if->getHandle(left_rear_wheel_name); // throws on failure
+
+    ROS_INFO_STREAM_NAMED(name_, "Adding the left front wheel with joint name: "
+                                     << left_front_wheel_name);
+    left_front_wheel_joint_ =
+        vel_joint_if->getHandle(left_front_wheel_name); // throws on failure
+
+    ROS_INFO_STREAM_NAMED(name_, "Adding the right front wheel with joint name: "
+                                     << right_front_wheel_name);
+    right_front_wheel_joint_ =
+        vel_joint_if->getHandle(right_front_wheel_name); // throws on failure
 
     //-- front steer
     ROS_INFO_STREAM_NAMED(name_,
@@ -325,7 +356,7 @@ namespace ackermann_steering_controller{
     }
     else
     {
-      double wheel_pos  = rear_wheel_joint_.getPosition();
+      double wheel_pos  = right_rear_wheel_joint_.getPosition();
       double steer_pos = front_steer_joint_.getPosition();
 
       if (std::isnan(wheel_pos) || std::isnan(steer_pos))
@@ -373,6 +404,7 @@ namespace ackermann_steering_controller{
     Commands curr_cmd = *(command_.readFromRT());
     const double dt = (time - curr_cmd.stamp).toSec();
 
+    // ROS_INFO_STREAM_NAMED(name_, " before limit Set: front_steer_joint: " << curr_cmd.ang << ".");
     // Brake if cmd_vel has timeout:
     if (dt > cmd_vel_timeout_)
     {
@@ -391,12 +423,17 @@ namespace ackermann_steering_controller{
 
     // Set Command
     const double wheel_vel = curr_cmd.lin/wheel_radius_; // omega = linear_vel / radius
-    rear_wheel_joint_.setCommand(wheel_vel);
+    right_rear_wheel_joint_.setCommand(wheel_vel);
     left_rear_wheel_joint_.setCommand(wheel_vel);
 
-    front_steer_joint_.setCommand(curr_cmd.ang);
+    right_front_wheel_joint_.setCommand(wheel_vel);
+    left_front_wheel_joint_.setCommand(wheel_vel);
+
+    // ROS_INFO_STREAM_NAMED(
+    //     name_, "Set: front_steer_joint: " << curr_cmd.ang << ".");
     left_front_steer_joint_.setCommand(curr_cmd.ang);
     right_front_steer_joint_.setCommand(curr_cmd.ang);
+    front_steer_joint_.setCommand(curr_cmd.ang);
 
   }
 
@@ -420,8 +457,11 @@ namespace ackermann_steering_controller{
     const double steer_pos = 0.0;
     const double wheel_vel = 0.0;
 
-    rear_wheel_joint_.setCommand(wheel_vel);
+    right_rear_wheel_joint_.setCommand(wheel_vel);
     left_rear_wheel_joint_.setCommand(wheel_vel);
+    right_front_wheel_joint_.setCommand(wheel_vel);
+    left_front_wheel_joint_.setCommand(wheel_vel);
+
     front_steer_joint_.setCommand(steer_pos);
     left_front_steer_joint_.setCommand(steer_pos);
     right_front_steer_joint_.setCommand(steer_pos);
@@ -456,81 +496,6 @@ namespace ackermann_steering_controller{
     }
   }
 
-
-  bool AckermannSteeringController::setOdomParamsFromUrdf(ros::NodeHandle& root_nh,
-                             const std::string rear_wheel_name,
-                             const std::string front_steer_name,
-                             bool lookup_wheel_separation_h,
-                             bool lookup_wheel_radius)
-  {
-    if (!(lookup_wheel_separation_h || lookup_wheel_radius))
-    {
-      // Short-circuit in case we don't need to look up anything, so we don't have to parse the URDF
-      return true;
-    }
-
-    // Parse robot description
-    const std::string model_param_name = "robot_description";
-    bool res = root_nh.hasParam(model_param_name);
-    std::string robot_model_str="";
-    if (!res || !root_nh.getParam(model_param_name,robot_model_str))
-    {
-      ROS_ERROR_NAMED(name_, "Robot descripion couldn't be retrieved from param server.");
-      return false;
-    }
-
-    urdf::ModelInterfaceSharedPtr model(urdf::parseURDF(robot_model_str));
-
-    urdf::JointConstSharedPtr rear_wheel_joint(model->getJoint(rear_wheel_name));
-    urdf::JointConstSharedPtr front_steer_joint(model->getJoint(front_steer_name));
-
-    if (lookup_wheel_separation_h)
-    {
-      // Get wheel separation
-      if (!rear_wheel_joint)
-      {
-        ROS_ERROR_STREAM_NAMED(name_, rear_wheel_name
-                               << " couldn't be retrieved from model description");
-        return false;
-      }
-
-      if (!front_steer_joint)
-      {
-        ROS_ERROR_STREAM_NAMED(name_, front_steer_name
-                               << " couldn't be retrieved from model description");
-        return false;
-      }
-
-      ROS_INFO_STREAM("rear wheel to origin: "
-                      << rear_wheel_joint->parent_to_joint_origin_transform.position.x << ","
-                      << rear_wheel_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << rear_wheel_joint->parent_to_joint_origin_transform.position.z);
-
-      ROS_INFO_STREAM("front steer to origin: "
-                      << front_steer_joint->parent_to_joint_origin_transform.position.x << ","
-                      << front_steer_joint->parent_to_joint_origin_transform.position.y << ", "
-                      << front_steer_joint->parent_to_joint_origin_transform.position.z);
-
-      wheel_separation_h_ = fabs(
-                  rear_wheel_joint->parent_to_joint_origin_transform.position.x
-                  - front_steer_joint->parent_to_joint_origin_transform.position.x);
-
-      ROS_INFO_STREAM("Calculated wheel_separation_h: " << wheel_separation_h_);
-    }
-
-    if (lookup_wheel_radius)
-    {
-      // Get wheel radius
-      if (!getWheelRadius(model->getLink(rear_wheel_joint->child_link_name), wheel_radius_))
-      {
-        ROS_ERROR_STREAM_NAMED(name_, "Couldn't retrieve " << rear_wheel_name << " wheel radius");
-        return false;
-      }
-      ROS_INFO_STREAM("Retrieved wheel_radius: " << wheel_radius_);
-    }
-
-    return true;
-  }
 
   void AckermannSteeringController::setOdomPubFields(ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh)
   {

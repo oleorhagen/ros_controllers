@@ -276,9 +276,11 @@ namespace ackermann_steering_controller{
 
     // If either parameter is not available, we need to look up the value in the URDF
     bool lookup_wheel_separation_h = !controller_nh.getParam("wheel_separation_h", wheel_separation_h_);
+
+    bool lookup_wheel_separation_l = !controller_nh.getParam("wheel_separation_h", wheel_separation_l_);
     bool lookup_wheel_radius = !controller_nh.getParam("wheel_radius", wheel_radius_);
 
-    if (lookup_wheel_separation_h || lookup_wheel_radius) {
+    if (lookup_wheel_separation_h || lookup_wheel_radius || lookup_wheel_separation_l) {
       return false;
     }
     // if (!setOdomParamsFromUrdf(root_nh,
@@ -426,13 +428,39 @@ namespace ackermann_steering_controller{
     right_rear_wheel_joint_.setCommand(wheel_vel);
     left_rear_wheel_joint_.setCommand(wheel_vel);
 
+    // TODO -- Create the inner and outer wheel rotation ratio functions
+
     right_front_wheel_joint_.setCommand(wheel_vel);
     left_front_wheel_joint_.setCommand(wheel_vel);
 
     // ROS_INFO_STREAM_NAMED(
     //     name_, "Set: front_steer_joint: " << curr_cmd.ang << ".");
-    left_front_steer_joint_.setCommand(curr_cmd.ang);
-    right_front_steer_joint_.setCommand(curr_cmd.ang);
+
+    // Calculate the wheel angles for the left and right steer
+    const double theta = curr_cmd.ang;
+    const double length = wheel_separation_l_;
+    const double width = wheel_separation_h_;
+
+    const double right_wheel_steer_angle = atan(
+                                                (2 * length * sin(theta))
+                                                /
+                                                (2* length * cos(theta) - width * sin(theta))
+                                                );
+
+    const double left_wheel_steer_angle = atan(
+                                               (2 * length * sin(theta))
+                                               /
+                                               (2 * length * cos(theta) + width * sin(theta))
+                                               );
+
+    ROS_INFO_STREAM_NAMED(name_, " left wheel angle: " <<
+                          left_wheel_steer_angle << ".");
+
+    ROS_INFO_STREAM_NAMED(name_, " right wheel angle: "
+                          << right_wheel_steer_angle << ".");
+
+    left_front_steer_joint_.setCommand(right_wheel_steer_angle);
+    right_front_steer_joint_.setCommand(left_wheel_steer_angle);
     front_steer_joint_.setCommand(curr_cmd.ang);
 
   }

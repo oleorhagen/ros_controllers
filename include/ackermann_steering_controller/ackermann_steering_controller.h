@@ -137,6 +137,7 @@ namespace ackermann_steering_controller{
 
     /// Wheel separation, wrt the midpoint of the wheel width:
     double wheel_separation_h_;
+    double wheel_separation_l_;
 
     /// Wheel radius (assuming it's the same for the left and right wheels):
     double wheel_radius_;

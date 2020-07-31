@@ -42,167 +42,152 @@
 
 #pragma once
 
-
-#include <ros/time.h>
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
 #include <boost/function.hpp>
+#include <ros/time.h>
 
-namespace ackermann_steering_controller
-{
-  namespace bacc = boost::accumulators;
+namespace ackermann_steering_controller {
+namespace bacc = boost::accumulators;
+
+/**
+ * \brief The Odometry class handles odometry readings
+ * (2D pose and velocity with related timestamp)
+ */
+class Odometry {
+ public:
+  /// Integration function, used to integrate the odometry:
+  typedef boost::function<void(double, double)> IntegrationFunction;
 
   /**
-   * \brief The Odometry class handles odometry readings
-   * (2D pose and velocity with related timestamp)
+   * \brief Constructor
+   * Timestamp will get the current time value
+   * Value will be set to zero
+   * \param velocity_rolling_window_size Rolling window size used to compute the
+   * velocity mean
    */
-  class Odometry
-  {
-  public:
+  Odometry(size_t velocity_rolling_window_size = 10);
 
-    /// Integration function, used to integrate the odometry:
-    typedef boost::function<void(double, double)> IntegrationFunction;
+  /**
+   * \brief Initialize the odometry
+   * \param time Current time
+   */
+  void init(const ros::Time& time);
 
-    /**
-     * \brief Constructor
-     * Timestamp will get the current time value
-     * Value will be set to zero
-     * \param velocity_rolling_window_size Rolling window size used to compute the velocity mean
-     */
-    Odometry(size_t velocity_rolling_window_size = 10);
+  /**
+   * \brief Updates the odometry class with latest wheels position
+   * \param rear_wheel_pos  Rear wheel position [rad]
+   * \param front_steer_pos Front Steer position [rad]
+   * \param time      Current time
+   * \return true if the odometry is actually updated
+   */
+  bool update(double rear_wheel_pos, double front_steer_pos,
+              const ros::Time& time);
 
-    /**
-     * \brief Initialize the odometry
-     * \param time Current time
-     */
-    void init(const ros::Time &time);
+  /**
+   * \brief Updates the odometry class with latest velocity command
+   * \param linear  Linear velocity [m/s]
+   * \param angular Angular velocity [rad/s]
+   * \param time    Current time
+   */
+  void updateOpenLoop(double linear, double angular, const ros::Time& time);
 
-    /**
-     * \brief Updates the odometry class with latest wheels position
-     * \param rear_wheel_pos  Rear wheel position [rad]
-     * \param front_steer_pos Front Steer position [rad]
-     * \param time      Current time
-     * \return true if the odometry is actually updated
-     */
-    bool update(double rear_wheel_pos, double front_steer_pos, const ros::Time &time);
+  /**
+   * \brief heading getter
+   * \return heading [rad]
+   */
+  double getHeading() const { return heading_; }
 
-    /**
-     * \brief Updates the odometry class with latest velocity command
-     * \param linear  Linear velocity [m/s]
-     * \param angular Angular velocity [rad/s]
-     * \param time    Current time
-     */
-    void updateOpenLoop(double linear, double angular, const ros::Time &time);
+  /**
+   * \brief x position getter
+   * \return x position [m]
+   */
+  double getX() const { return x_; }
 
-    /**
-     * \brief heading getter
-     * \return heading [rad]
-     */
-    double getHeading() const
-    {
-      return heading_;
-    }
+  /**
+   * \brief y position getter
+   * \return y position [m]
+   */
+  double getY() const { return y_; }
 
-    /**
-     * \brief x position getter
-     * \return x position [m]
-     */
-    double getX() const
-    {
-      return x_;
-    }
+  /**
+   * \brief linear velocity getter
+   * \return linear velocity [m/s]
+   */
+  double getLinear() const { return linear_; }
 
-    /**
-     * \brief y position getter
-     * \return y position [m]
-     */
-    double getY() const
-    {
-      return y_;
-    }
+  /**
+   * \brief angular velocity getter
+   * \return angular velocity [rad/s]
+   */
+  double getAngular() const { return angular_; }
 
-    /**
-     * \brief linear velocity getter
-     * \return linear velocity [m/s]
-     */
-    double getLinear() const
-    {
-      return linear_;
-    }
+  /**
+   * \brief Sets the wheel parameters: radius and separation
+   * \param wheel_separation Seperation between left and right wheels [m]
+   * \param wheel_radius     Wheel radius [m]
+   */
+  void setWheelParams(double wheel_reparation_h, double wheel_radius);
 
-    /**
-     * \brief angular velocity getter
-     * \return angular velocity [rad/s]
-     */
-    double getAngular() const
-    {
-      return angular_;
-    }
+  /**
+   * \brief Velocity rolling window size setter
+   * \param velocity_rolling_window_size Velocity rolling window size
+   */
+  void setVelocityRollingWindowSize(size_t velocity_rolling_window_size);
 
-    /**
-     * \brief Sets the wheel parameters: radius and separation
-     * \param wheel_separation Seperation between left and right wheels [m]
-     * \param wheel_radius     Wheel radius [m]
-     */
-    void setWheelParams(double wheel_reparation_h, double wheel_radius);
+ private:
+  /// Rolling mean accumulator and window:
+  typedef bacc::accumulator_set<double, bacc::stats<bacc::tag::rolling_mean> >
+      RollingMeanAcc;
+  typedef bacc::tag::rolling_window RollingWindow;
 
-    /**
-     * \brief Velocity rolling window size setter
-     * \param velocity_rolling_window_size Velocity rolling window size
-     */
-    void setVelocityRollingWindowSize(size_t velocity_rolling_window_size);
+  /**
+   * \brief Integrates the velocities (linear and angular) using 2nd order
+   * Runge-Kutta \param linear  Linear  velocity   [m] (linear  displacement,
+   * i.e. m/s * dt) computed by encoders \param angular Angular velocity [rad]
+   * (angular displacement, i.e. m/s * dt) computed by encoders
+   */
+  void integrateRungeKutta2(double linear, double angular);
 
-  private:
+  /**
+   * \brief Integrates the velocities (linear and angular) using exact method
+   * \param linear  Linear  velocity   [m] (linear  displacement, i.e. m/s * dt)
+   * computed by encoders \param angular Angular velocity [rad] (angular
+   * displacement, i.e. m/s * dt) computed by encoders
+   */
+  void integrateExact(double linear, double angular);
 
-    /// Rolling mean accumulator and window:
-    typedef bacc::accumulator_set<double, bacc::stats<bacc::tag::rolling_mean> > RollingMeanAcc;
-    typedef bacc::tag::rolling_window RollingWindow;
+  /**
+   *  \brief Reset linear and angular accumulators
+   */
+  void resetAccumulators();
 
-    /**
-     * \brief Integrates the velocities (linear and angular) using 2nd order Runge-Kutta
-     * \param linear  Linear  velocity   [m] (linear  displacement, i.e. m/s * dt) computed by encoders
-     * \param angular Angular velocity [rad] (angular displacement, i.e. m/s * dt) computed by encoders
-     */
-    void integrateRungeKutta2(double linear, double angular);
+  /// Current timestamp:
+  ros::Time timestamp_;
 
-    /**
-     * \brief Integrates the velocities (linear and angular) using exact method
-     * \param linear  Linear  velocity   [m] (linear  displacement, i.e. m/s * dt) computed by encoders
-     * \param angular Angular velocity [rad] (angular displacement, i.e. m/s * dt) computed by encoders
-     */
-    void integrateExact(double linear, double angular);
+  /// Current pose:
+  double x_;        //   [m]
+  double y_;        //   [m]
+  double heading_;  // [rad]
 
-    /**
-     *  \brief Reset linear and angular accumulators
-     */
-    void resetAccumulators();
+  /// Current velocity:
+  double linear_;   //   [m/s]
+  double angular_;  // [rad/s]
 
-    /// Current timestamp:
-    ros::Time timestamp_;
+  /// Wheel kinematic parameters [m]:
+  double wheel_separation_h_;
+  double wheel_radius_;
 
-    /// Current pose:
-    double x_;        //   [m]
-    double y_;        //   [m]
-    double heading_;  // [rad]
+  /// Previous wheel position/state [rad]:
+  double rear_wheel_old_pos_;
 
-    /// Current velocity:
-    double linear_;  //   [m/s]
-    double angular_; // [rad/s]
+  /// Rolling mean accumulators for the linar and angular velocities:
+  size_t velocity_rolling_window_size_;
+  RollingMeanAcc linear_acc_;
+  RollingMeanAcc angular_acc_;
 
-    /// Wheel kinematic parameters [m]:
-    double wheel_separation_h_;
-    double wheel_radius_;
-
-    /// Previous wheel position/state [rad]:
-    double rear_wheel_old_pos_;
-
-    /// Rolling mean accumulators for the linar and angular velocities:
-    size_t velocity_rolling_window_size_;
-    RollingMeanAcc linear_acc_;
-    RollingMeanAcc angular_acc_;
-
-    /// Integration funcion, used to integrate the odometry:
-    IntegrationFunction integrate_fun_;
-  };
-}
+  /// Integration funcion, used to integrate the odometry:
+  IntegrationFunction integrate_fun_;
+};
+}  // namespace ackermann_steering_controller

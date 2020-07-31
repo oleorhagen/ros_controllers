@@ -27,7 +27,8 @@
 
 /// \author Masaru Morita
 
-// NOTE: The contents of this file have been taken largely from the ros_control wiki tutorials
+// NOTE: The contents of this file have been taken largely from the ros_control
+// wiki tutorials
 
 // ROS
 #include <ros/ros.h>
@@ -37,8 +38,7 @@
 
 #include "./../include/ackermann_steering_bot.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
   ros::init(argc, argv, "ackermann_steering_bot");
   ros::NodeHandle nh;
 
@@ -49,8 +49,7 @@ int main(int argc, char **argv)
   ros::Rate rate(1.0 / robot.getPeriod().toSec());
   ros::AsyncSpinner spinner(1);
   spinner.start();
-  while(ros::ok())
-  {
+  while (ros::ok()) {
     robot.read();
     cm.update(robot.getTime(), robot.getPeriod());
     robot.write();

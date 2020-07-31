@@ -28,15 +28,13 @@
 /// \author Bence Magyar
 /// \author Masaru Morita
 
-#include "../common/include/test_common.h"
 #include <tf/transform_listener.h>
+#include "../common/include/test_common.h"
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testNoOdomFrame)
-{
+TEST_F(AckermannSteeringControllerTest, testNoOdomFrame) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // set up tf listener
@@ -46,8 +44,7 @@ TEST_F(AckermannSteeringControllerTest, testNoOdomFrame)
   EXPECT_FALSE(listener.frameExists("odom"));
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ackermann_steering_controller_odom_tf_test");
 

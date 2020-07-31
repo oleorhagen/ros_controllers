@@ -34,11 +34,9 @@
 #include <limits>
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testNaN)
-{
+TEST_F(AckermannSteeringControllerTest, testNaN) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // zero everything before test
@@ -79,8 +77,7 @@ TEST_F(AckermannSteeringControllerTest, testNaN)
   EXPECT_NE(std::isnan(odom.pose.pose.orientation.w), true);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ackermann_steering_controller_nan_test");
 

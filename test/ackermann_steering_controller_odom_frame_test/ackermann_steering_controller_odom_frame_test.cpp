@@ -28,15 +28,13 @@
 /// \author Eric Tappan
 /// \author Masaru Morita
 
-#include "../common/include/test_common.h"
 #include <tf/transform_listener.h>
+#include "../common/include/test_common.h"
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testNoOdomFrame)
-{
+TEST_F(AckermannSteeringControllerTest, testNoOdomFrame) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // set up tf listener
@@ -46,11 +44,9 @@ TEST_F(AckermannSteeringControllerTest, testNoOdomFrame)
   EXPECT_FALSE(listener.frameExists("odom"));
 }
 
-TEST_F(AckermannSteeringControllerTest, testNewOdomFrame)
-{
+TEST_F(AckermannSteeringControllerTest, testNewOdomFrame) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // set up tf listener
@@ -60,11 +56,9 @@ TEST_F(AckermannSteeringControllerTest, testNewOdomFrame)
   EXPECT_TRUE(listener.frameExists("new_odom"));
 }
 
-TEST_F(AckermannSteeringControllerTest, testOdomTopic)
-{
+TEST_F(AckermannSteeringControllerTest, testOdomTopic) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
 
@@ -75,8 +69,7 @@ TEST_F(AckermannSteeringControllerTest, testOdomTopic)
   ASSERT_STREQ(odom_msg.header.frame_id.c_str(), "new_odom");
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ackermann_steering_controller_odom_frame_test");
 

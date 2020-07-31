@@ -28,15 +28,13 @@
 /// \author Eric Tappan
 /// \author Masaru Morita
 
-#include "../common/include/test_common.h"
 #include <tf/transform_listener.h>
+#include "../common/include/test_common.h"
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testOdomFrame)
-{
+TEST_F(AckermannSteeringControllerTest, testOdomFrame) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // set up tf listener
@@ -46,11 +44,9 @@ TEST_F(AckermannSteeringControllerTest, testOdomFrame)
   EXPECT_TRUE(listener.frameExists("odom"));
 }
 
-TEST_F(AckermannSteeringControllerTest, testOdomTopic)
-{
+TEST_F(AckermannSteeringControllerTest, testOdomTopic) {
   // wait for ROS
-  while(!isControllerAlive() || !isLastOdomValid())
-  {
+  while (!isControllerAlive() || !isLastOdomValid()) {
     ros::Duration(0.1).sleep();
   }
 
@@ -60,10 +56,10 @@ TEST_F(AckermannSteeringControllerTest, testOdomTopic)
   ASSERT_STREQ(odom_msg.header.frame_id.c_str(), "odom");
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "ackermann_steering_controller_default_odom_frame_test");
+  ros::init(argc, argv,
+            "ackermann_steering_controller_default_odom_frame_test");
 
   ros::AsyncSpinner spinner(1);
   spinner.start();

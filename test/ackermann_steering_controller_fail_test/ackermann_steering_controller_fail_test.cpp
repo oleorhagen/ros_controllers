@@ -31,12 +31,10 @@
 #include "../common/include/test_common.h"
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testWrongJointName)
-{
+TEST_F(AckermannSteeringControllerTest, testWrongJointName) {
   // the controller should never be alive
   int secs = 0;
-  while(!isControllerAlive() && secs < 5)
-  {
+  while (!isControllerAlive() && secs < 5) {
     ros::Duration(1.0).sleep();
     secs++;
   }
@@ -44,8 +42,7 @@ TEST_F(AckermannSteeringControllerTest, testWrongJointName)
   EXPECT_GE(secs, 5);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ackermann_steering_controller_fail_test");
 

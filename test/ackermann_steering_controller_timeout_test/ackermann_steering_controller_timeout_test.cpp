@@ -31,11 +31,9 @@
 #include "../common/include/test_common.h"
 
 // TEST CASES
-TEST_F(AckermannSteeringControllerTest, testTimeout)
-{
+TEST_F(AckermannSteeringControllerTest, testTimeout) {
   // wait for ROS
-  while(!isControllerAlive())
-  {
+  while (!isControllerAlive()) {
     ros::Duration(0.1).sleep();
   }
   // zero everything before test
@@ -55,12 +53,13 @@ TEST_F(AckermannSteeringControllerTest, testTimeout)
 
   nav_msgs::Odometry new_odom = getLastOdom();
 
-  // check if the robot has stopped after 0.5s, thus covering less than 0.5s*1.0m.s-1 + some (big) tolerance
-  EXPECT_LT(fabs(new_odom.pose.pose.position.x - old_odom.pose.pose.position.x), 0.8);
+  // check if the robot has stopped after 0.5s, thus covering less than
+  // 0.5s*1.0m.s-1 + some (big) tolerance
+  EXPECT_LT(fabs(new_odom.pose.pose.position.x - old_odom.pose.pose.position.x),
+            0.8);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ackermann_steering_controller_timeout_test");
 

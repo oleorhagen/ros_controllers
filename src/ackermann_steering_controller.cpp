@@ -37,6 +37,7 @@
  */
 
 #include <cmath>
+#include <math.h>
 #include <pluginlib/class_list_macros.h>
 #include <tf/transform_datatypes.h>
 #include <urdf_parser/urdf_parser.h>
@@ -424,17 +425,6 @@ namespace ackermann_steering_controller{
     last0_cmd_ = curr_cmd;
 
     // Set Command
-    const double wheel_vel = curr_cmd.lin/wheel_radius_; // omega = linear_vel / radius
-    right_rear_wheel_joint_.setCommand(wheel_vel);
-    left_rear_wheel_joint_.setCommand(wheel_vel);
-
-    // TODO -- Create the inner and outer wheel rotation ratio functions
-
-    right_front_wheel_joint_.setCommand(wheel_vel);
-    left_front_wheel_joint_.setCommand(wheel_vel);
-
-    // ROS_INFO_STREAM_NAMED(
-    //     name_, "Set: front_steer_joint: " << curr_cmd.ang << ".");
 
     // Calculate the wheel angles for the left and right steer
     const double theta = curr_cmd.ang;
@@ -463,6 +453,34 @@ namespace ackermann_steering_controller{
     right_front_steer_joint_.setCommand(left_wheel_steer_angle);
     front_steer_joint_.setCommand(curr_cmd.ang);
 
+    const double wheel_vel =
+        curr_cmd.lin / wheel_radius_; // omega = linear_vel / radius
+
+    const double r = wheel_separation_l_ * atan(theta);
+
+    const double r_right_front_wheel = sqrt(pow((r + (wheel_separation_l_ / 2)), 2) + pow(wheel_separation_h_, 2));
+    const double right_front_wheel_omega = (r_right_front_wheel / r) * curr_cmd.lin;
+
+    const double r_left_front_wheel = sqrt(pow((r - (wheel_separation_l_ / 2)),2) + pow(wheel_separation_h_, 2));
+    const double left_front_wheel_omega = (r_left_front_wheel / r) * curr_cmd.lin;
+
+    const double right_rear_wheel_omega = ( (r + (wheel_separation_l_/2)) / r) * curr_cmd.lin;
+    const double left_rear_wheel_omega = ((r - (wheel_separation_l_ / 2)) / r) * curr_cmd.lin;
+
+    right_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
+    left_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
+
+    right_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
+    left_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
+
+    ROS_INFO_STREAM_NAMED(
+        name_, " right_rear_wheel_omega: " << right_rear_wheel_omega << ".");
+    ROS_INFO_STREAM_NAMED(
+        name_, " left_rear_wheel_omega: " << left_rear_wheel_omega << ".");
+    ROS_INFO_STREAM_NAMED(
+        name_, " right_front_wheel_omega: " << right_front_wheel_omega << ".");
+    ROS_INFO_STREAM_NAMED(
+        name_, " left_front_wheel_omega: " << left_front_wheel_omega << ".");
   }
 
   void AckermannSteeringController::starting(const ros::Time& time)

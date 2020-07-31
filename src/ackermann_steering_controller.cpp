@@ -497,8 +497,7 @@ void AckermannSteeringController::update(const ros::Time& time,
   const double wheel_vel =
       curr_cmd.lin / wheel_radius_;  // omega = linear_vel / radius
 
-  // NOTE -- Double check this
-  const double r = wheel_separation_l_ * atan(theta);
+  const double r = abs(wheel_separation_l_ * tan((M_PI/2) - theta));
 
   const double r_right_front_wheel = sqrt(
       pow((r + (wheel_separation_l_ / 2)), 2) + pow(wheel_separation_h_, 2));
@@ -514,11 +513,11 @@ void AckermannSteeringController::update(const ros::Time& time,
   const double left_rear_wheel_omega =
       ((r - (wheel_separation_l_ / 2)) / r) * curr_cmd.lin;
 
-  right_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
-  left_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
+  right_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
+  left_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
 
-  right_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
-  left_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
+  right_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
+  left_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
 
   ROS_INFO_STREAM_NAMED(
       name_, " right_rear_wheel_omega: " << right_rear_wheel_omega << ".");

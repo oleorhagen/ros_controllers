@@ -497,7 +497,7 @@ void AckermannSteeringController::update(const ros::Time& time,
   const double wheel_vel =
       curr_cmd.lin / wheel_radius_;  // omega = linear_vel / radius
 
-  const double r = abs(wheel_separation_l_ * tan((M_PI/2) - theta));
+  const double r = abs(wheel_separation_l_ * tan((M_PI / 2) - theta));
 
   const double r_right_front_wheel = sqrt(
       pow((r + (wheel_separation_l_ / 2)), 2) + pow(wheel_separation_h_, 2));

@@ -484,10 +484,10 @@ void AckermannSteeringController::update(const ros::Time& time,
       atan((2 * length * sin(theta)) /
            (2 * length * cos(theta) + width * sin(theta)));
 
-  ROS_INFO_STREAM_NAMED(name_,
-                        " left wheel angle: " << left_wheel_steer_angle << ".");
+  ROS_DEBUG_STREAM_NAMED(
+      name_, " left wheel angle: " << left_wheel_steer_angle << ".");
 
-  ROS_INFO_STREAM_NAMED(
+  ROS_DEBUG_STREAM_NAMED(
       name_, " right wheel angle: " << right_wheel_steer_angle << ".");
 
   left_front_steer_joint_.setCommand(right_wheel_steer_angle);
@@ -519,13 +519,13 @@ void AckermannSteeringController::update(const ros::Time& time,
   right_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
   left_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
 
-  ROS_INFO_STREAM_NAMED(
+  ROS_DEBUG_STREAM_NAMED(
       name_, " right_rear_wheel_omega: " << right_rear_wheel_omega << ".");
-  ROS_INFO_STREAM_NAMED(
+  ROS_DEBUG_STREAM_NAMED(
       name_, " left_rear_wheel_omega: " << left_rear_wheel_omega << ".");
-  ROS_INFO_STREAM_NAMED(
+  ROS_DEBUG_STREAM_NAMED(
       name_, " right_front_wheel_omega: " << right_front_wheel_omega << ".");
-  ROS_INFO_STREAM_NAMED(
+  ROS_DEBUG_STREAM_NAMED(
       name_, " left_front_wheel_omega: " << left_front_wheel_omega << ".");
 }
 

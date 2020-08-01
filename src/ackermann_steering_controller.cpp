@@ -492,10 +492,10 @@ void AckermannSteeringController::update(const ros::Time& time,
       atan((2 * length * sin(theta)) /
            (2 * length * cos(theta) + width * sin(theta)));
 
-  ROS_DEBUG_STREAM_NAMED(
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " left wheel angle: " << left_wheel_steer_angle << ".");
 
-  ROS_DEBUG_STREAM_NAMED(
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " right wheel angle: " << right_wheel_steer_angle << ".");
 
   left_front_steer_joint_.setCommand(right_wheel_steer_angle);
@@ -521,19 +521,31 @@ void AckermannSteeringController::update(const ros::Time& time,
   const double left_rear_wheel_omega =
       ((r - (wheel_separation_l_ / 2)) / r) * curr_cmd.lin;
 
-  right_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
-  left_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
+  if (theta > 0) {
+    right_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
+    left_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
 
-  right_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
-  left_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
+    right_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
+    left_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
 
-  ROS_DEBUG_STREAM_NAMED(
+  } else {
+
+    right_rear_wheel_joint_.setCommand(left_rear_wheel_omega / wheel_radius_);
+    left_rear_wheel_joint_.setCommand(right_rear_wheel_omega / wheel_radius_);
+
+    right_front_wheel_joint_.setCommand(left_front_wheel_omega / wheel_radius_);
+    left_front_wheel_joint_.setCommand(right_front_wheel_omega / wheel_radius_);
+  }
+
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
+      name_, " theta: " << theta << ".");
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " right_rear_wheel_omega: " << right_rear_wheel_omega << ".");
-  ROS_DEBUG_STREAM_NAMED(
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " left_rear_wheel_omega: " << left_rear_wheel_omega << ".");
-  ROS_DEBUG_STREAM_NAMED(
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " right_front_wheel_omega: " << right_front_wheel_omega << ".");
-  ROS_DEBUG_STREAM_NAMED(
+  ROS_DEBUG_STREAM_THROTTLE_NAMED(10,
       name_, " left_front_wheel_omega: " << left_front_wheel_omega << ".");
 }
 

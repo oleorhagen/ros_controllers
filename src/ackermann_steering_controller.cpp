@@ -417,7 +417,7 @@ void AckermannSteeringController::update(const ros::Time& time,
 
     const double gain = r_right/ abs(r);
 
-    ROS_INFO_STREAM_NAMED(name_, " gain: " << gain);
+    ROS_DEBUG_STREAM_NAMED(name_, " gain: " << gain);
 
     if (std::isnan(wheel_pos) || std::isnan(steer_pos)) return;
 

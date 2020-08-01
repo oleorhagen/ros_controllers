@@ -69,7 +69,7 @@ void Odometry::init(const ros::Time& time) {
 }
 
 bool Odometry::update(double rear_wheel_pos, double front_steer_pos,
-                      const ros::Time& time) {
+                      const ros::Time& time, const double gain) {
   /// Get current wheel joint positions:
   const double rear_wheel_cur_pos = rear_wheel_pos * wheel_radius_;
 
@@ -78,7 +78,7 @@ bool Odometry::update(double rear_wheel_pos, double front_steer_pos,
   // left_wheel_old_pos_; const double right_wheel_est_vel = right_wheel_cur_pos
   // - right_wheel_old_pos_;
 
-  const double rear_wheel_est_vel = rear_wheel_cur_pos - rear_wheel_old_pos_;
+  const double rear_wheel_est_vel = (rear_wheel_cur_pos - rear_wheel_old_pos_)*gain;
 
   /// Update old position with current:
   rear_wheel_old_pos_ = rear_wheel_cur_pos;

@@ -411,11 +411,19 @@ void AckermannSteeringController::update(const ros::Time& time,
     double wheel_pos = right_rear_wheel_joint_.getPosition();
     double steer_pos = front_steer_joint_.getPosition();
 
+    const double r = abs(wheel_separation_l_ * tan((M_PI / 2) - steer_pos));
+
+    const double r_right = r - (wheel_separation_l_ / 2);
+
+    const double gain = r/ r_right;
+
+    ROS_DEBUG_STREAM_NAMED(name_, " gain: " << gain);
+
     if (std::isnan(wheel_pos) || std::isnan(steer_pos)) return;
 
     // Estimate linear and angular velocity using joint information
     steer_pos = steer_pos * steer_pos_multiplier_;
-    odometry_.update(wheel_pos, steer_pos, time);
+    odometry_.update(wheel_pos, steer_pos, time, gain);
   }
 
   // Publish odometry message

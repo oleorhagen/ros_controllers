@@ -83,7 +83,7 @@ class Odometry {
    * \return true if the odometry is actually updated
    */
   bool update(double rear_wheel_pos, double front_steer_pos,
-              const ros::Time& time);
+              const ros::Time& time, const double gain);
 
   /**
    * \brief Updates the odometry class with latest velocity command
